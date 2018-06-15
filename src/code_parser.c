@@ -44,7 +44,7 @@ expr_t code_parser_stat_pop(code_parser_stat_t *parser_stat){
 	if(previous_node != NULL){
 		previous_node->next_node = NULL;	
 	}
-	expr_t result = NONE;
+	expr_t result = EXPR_NONE;
 	if(current_node != NULL){
 		result = current_node->current_expression;
 		free(current_node);
