@@ -1,7 +1,8 @@
 #include "code_parser.h"
 #include <stdlib.h>
 
-void code_parser_stat_init(code_parser_stat_t *parser_stat){
+void code_parser_stat_init(code_parser_stat_t *parser_stat, expr_func *table){
+	parser_stat->table = table;
 	parser_stat->line_char_count = 0;
 	parser_stat->tab_count = 0;
 	parser_stat->head = NULL;
@@ -20,14 +21,20 @@ void code_parser_stat_free(code_parser_stat_t *parser_stat){
 }
 
 void code_parser_stat_push(code_parser_stat_t *parser_stat, expr_t new_expression){
+	
 	expr_node_t *new_node = malloc(sizeof(expr_node_t));
+	
 	new_node->next_node = NULL;
 	new_node->current_expression = new_expression;
-	parser_stat->tail->next_node = new_node;
-	parser_stat->tail = new_node;
+		
 	if(parser_stat->head == NULL){
 		parser_stat->head = new_node;
+		parser_stat->tail = new_node;
+	} else {
+		parser_stat->tail->next_node = new_node;
+		parser_stat->tail = new_node;
 	}
+	return;
 }
 
 expr_t code_parser_stat_pop(code_parser_stat_t *parser_stat){

@@ -4,7 +4,6 @@
 #include "formatting_logic.h"
 
 int main(int argc, char *argv[]){
-	
         if(argc != 3 && argc != 2){
                 fprintf(stderr, "Ну, как бы, надо 2 файла... \n");
                 return 1;
