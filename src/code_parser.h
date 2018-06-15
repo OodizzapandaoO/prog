@@ -2,8 +2,13 @@
 #define CODE_PARSER_H
 
 typedef enum{
-	EXPR_NONE,	
-	EXPR_PRE_PROC
+	EXPR_FIRST = 0,
+	
+	EXPR_NONE = 0,	
+	EXPR_PRE_PROC = 1,
+	EXPR_BLOCK = 2,
+	
+	EXPR_LAST = 1,
 }expr_t;
 
 struct expr_node_s;

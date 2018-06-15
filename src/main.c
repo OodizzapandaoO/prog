@@ -29,13 +29,11 @@ int main(int argc, char *argv[]){
 			}
 		}
 		
-/*		fgetc(pars_from);
-		char *word_test = get_word(pars_from);
-		printf("%s", word_test);*/
+	formating(pars_from, pars_to);
 		
-		if(pars_to == stdout){
-			fclose(pars_to);
-		}
+	if(pars_to == stdout){
+		fclose(pars_to);
+	}
 		fclose(pars_from);
         return 0;
 }
