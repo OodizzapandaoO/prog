@@ -5,36 +5,36 @@
 
 #define MAX_WORD_SIZE 128
 
-static void out_block_expr(FILE *from, FILE *to, code_parser_stat_t *stat);
-static void block_expr(FILE *from, FILE *to, code_parser_stat_t *stat);
-static void pre_proc_expr(FILE *from, FILE *to, code_parser_stat_t *stat);
+static void out_block_expr(FILE *from_ptr, FILE *to_ptr, code_parser_stat_t *stat_ptr);
+static void block_expr(FILE *from_ptr, FILE *to_ptr, code_parser_stat_t *stat_ptr);
+static void pre_proc_expr(FILE *from_ptr, FILE *to_ptr, code_parser_stat_t *stat_ptr);
 
-static void expr_table_fill(expr_func *table){
-//	table[EXPR_NONE] = &block_expr;
-	table[EXPR_PRE_PROC] = &pre_proc_expr;
-	table[EXPR_BLOCK] = &block_expr;
-	table[EXPR_OUT_BLOCK] = &out_block_expr;
+static void expr_table_fill(expr_func_ptr *table_ptr){
+//	table_ptr[EXPR_NONE] = &block_expr;
+	table_ptr[EXPR_PRE_PROC] = &pre_proc_expr;
+	table_ptr[EXPR_BLOCK] = &block_expr;
+	table_ptr[EXPR_OUT_BLOCK] = &out_block_expr;
 }
 
-static void code_parser_stat_do(FILE *from, FILE *to, code_parser_stat_t *stat){
-	stat->table[stat->tail->current_expression](from, to, stat);
+static void code_parser_stat_ptr_do(FILE *from_ptr, FILE *to_ptr, code_parser_stat_t *stat_ptr){
+	stat_ptr->table_ptr[stat_ptr->tail_ptr->current_expression](from_ptr, to_ptr, stat_ptr);
 }
 
-void formating(FILE *from, FILE *to){
+void formating(FILE *from_ptr, FILE *to_ptr){
 
 	size_t expr_size = EXPR_LAST + 1;
-	expr_func expr_table[expr_size];
+	expr_func_ptr expr_table[expr_size];
 	expr_table_fill(expr_table);
 	
-	code_parser_stat_t stat;
-	memset(&stat, 0, sizeof(code_parser_stat_t));
+	code_parser_stat_t stat_ptr;
+	memset(&stat_ptr, 0, sizeof(code_parser_stat_t));
 
-	code_parser_stat_init(&stat, expr_table);
+	code_parser_stat_init(&stat_ptr, expr_table);
 	
-	code_parser_stat_push(&stat, EXPR_OUT_BLOCK);
-	code_parser_stat_do(from, to, &stat);
+	code_parser_stat_push(&stat_ptr, EXPR_OUT_BLOCK);
+	code_parser_stat_ptr_do(from_ptr, to_ptr, &stat_ptr);
 	
-	code_parser_stat_free(&stat);
+	code_parser_stat_free(&stat_ptr);
 }
 
 static int word_condition(int c){
@@ -47,75 +47,85 @@ static int word_condition(int c){
 		return 0;
 }
 
-char *get_word(FILE *from){
+char *get_word(FILE *from_ptr){
 	static char word[MAX_WORD_SIZE];
 	
-	int c = fgetc(from);
+	int c = fgetc(from_ptr);
 	int len = 0;
 	
 	while(word_condition(c)){
 		word[len] = c;
-		c = fgetc(from);
+		c = fgetc(from_ptr);
 		len++;
 	}
 	word[len] = '\0';
 	
-	ungetc(c, from);
+	ungetc(c, from_ptr);
 	return word;
 }
 
-static void out_block_expr(FILE *from, FILE *to, code_parser_stat_t *stat){
-	int ch = fgetc(from);
+static void out_block_expr(FILE *from_ptr, FILE *to_ptr, code_parser_stat_t *stat_ptr){
+	int ch = fgetc(from_ptr);
 	while(ch != EOF){
 		if(ch == '#'){
-			code_parser_stat_push(stat, EXPR_PRE_PROC);
-			code_parser_stat_do(from, to, stat);
+			code_parser_stat_push(stat_ptr, EXPR_PRE_PROC);
+			code_parser_stat_ptr_do(from_ptr, to_ptr, stat_ptr);
 		} else if(word_condition(ch)){
 			
+		} else if(ch == '\n'){
+			fprintf(to_ptr, "\n");
+			stat_ptr->line_char_count = 0;
 		}
-			
-		ch = fgetc(from);
+		
+		ch = fgetc(from_ptr);
 	}
 	return;
 }
 
-static void block_expr(FILE *from, FILE *to, code_parser_stat_t *stat){
-	int ch = fgetc(from);
-	while((ch != '}') || (ch != EOF)){
+static void block_expr(FILE *from_ptr, FILE *to_ptr, code_parser_stat_t *stat_ptr){
+	int ch = fgetc(from_ptr);
+	while((ch != '}') && (ch != EOF)){
 		
 	}
-	fprintf(to, "}\n");
+	
+	ch = fgetc(from_ptr);
+	if(ch != '\n')
+		ungetc(ch, from_ptr);
+	
+	fprintf(to_ptr, "}\n");
+	stat_ptr->line_char_count = 0;
 }
 
-static void pre_proc_expr(FILE *from, FILE *to, code_parser_stat_t *stat){
-	if(stat->line_char_count != 0){
-		stat->line_char_count = 0;
-		fprintf(to, "\n");
+static void pre_proc_expr(FILE *from_ptr, FILE *to_ptr, code_parser_stat_t *stat_ptr){
+	if(stat_ptr->line_char_count != 0){
+		stat_ptr->line_char_count = 0;
+		fprintf(to_ptr, "\n");
 	}
 	
-	fprintf(to, "#");
+	fprintf(to_ptr, "#");
+	stat_ptr->line_char_count++;
 	
-	int ch = fgetc(from);
+	int ch = fgetc(from_ptr);
 	while((ch != '\n') && (ch != EOF)){
 		
-		stat->line_char_count++;
-		fprintf(to, "%c", ch);
+		stat_ptr->line_char_count++;
+		fprintf(to_ptr, "%c", ch);
 		
-		if(stat->line_char_count == 79){
-			fprintf(to, "\\\n");
-			stat->line_char_count = 0;
+		if(stat_ptr->line_char_count == 79){
+			fprintf(to_ptr, "\\\n");
+			stat_ptr->line_char_count = 0;
 		}
 		
 		int prev_ch = ch;
-		ch = fgetc(from);		
+		ch = fgetc(from_ptr);		
 		if((ch == '\n') && (prev_ch == '\\')){
-			fprintf(to, "%c", ch);
-			ch = fgetc(from);
+			fprintf(to_ptr, "%c", ch);
+			ch = fgetc(from_ptr);
 		}
 	}
-	fprintf(to, "\n");
-	stat->line_char_count = 0;
+	fprintf(to_ptr, "\n");
+	stat_ptr->line_char_count = 0;
 	
-	code_parser_stat_pop(stat);
+	code_parser_stat_pop(stat_ptr);
 	return;
 }

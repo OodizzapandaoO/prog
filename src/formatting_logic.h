@@ -5,8 +5,8 @@
 
 #include "code_parser.h"
 
-void formating(FILE *from, FILE *to);
+void formating(FILE *from_ptr, FILE *to_ptr);
 
-char *get_word(FILE *from);
+char *get_word(FILE *from_ptr);
 
 #endif

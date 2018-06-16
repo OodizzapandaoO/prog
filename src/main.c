@@ -9,30 +9,30 @@ int main(int argc, char *argv[]){
 		return 1;
 	}
 		
-	FILE *pars_from = fopen(argv[1], "r");
-	if(!pars_from){
+	FILE *pars_from_ptr = fopen(argv[1], "r");
+	if(!pars_from_ptr){
 		fprintf(stderr, "%s ", argv[1]);
 		perror("не удалось открыть файл ");
 		return 1;
 	}
 		
-	FILE *pars_to = NULL;
+	FILE *pars_to_ptr = NULL;
 	if( !strcmp(argv[2], "stdout") || (argc == 2)){
-		pars_to = stdout;
+		pars_to_ptr = stdout;
 	} else {
-		pars_to = fopen(argv[2], "w");
-		if(!pars_from){
+		pars_to_ptr = fopen(argv[2], "w");
+		if(!pars_from_ptr){
 			fprintf(stderr, "%s ", argv[2]);
 			perror("не удалось создать файл ");
 			return 1;
 		}
 	}
 		
-	formating(pars_from, pars_to);
+	formating(pars_from_ptr, pars_to_ptr);
 		
-	if(pars_to == stdout){
-		fclose(pars_to);
+	if(pars_to_ptr == stdout){
+		fclose(pars_to_ptr);
 	}
-		fclose(pars_from);
+		fclose(pars_from_ptr);
         return 0;
 }
