@@ -67,8 +67,14 @@ char *get_word(FILE *from){
 static void out_block_expr(FILE *from, FILE *to, code_parser_stat_t *stat){
 	int ch = fgetc(from);
 	while(ch != EOF){
-	/*	fprintf(to, "%c", ch);
-		ch = fgetc(from);*/
+		if(ch == '#'){
+			code_parser_stat_push(stat, EXPR_PRE_PROC);
+			code_parser_stat_do(from, to, stat);
+		} else if(word_condition(ch)){
+			
+		}
+			
+		ch = fgetc(from);
 	}
 	return;
 }
@@ -82,5 +88,32 @@ static void block_expr(FILE *from, FILE *to, code_parser_stat_t *stat){
 }
 
 static void pre_proc_expr(FILE *from, FILE *to, code_parser_stat_t *stat){
+	if(stat->line_char_count != 0){
+		stat->line_char_count = 0;
+		fprintf(to, "\n");
+	}
 	
+	fprintf(to, "#");
+	
+	int ch = fgetc(from);
+	while((ch != '\n') && (ch != EOF)){
+		
+		stat->line_char_count++;
+		fprintf(to, "%c", ch);
+		
+		if(stat->line_char_count == 79){
+			fprintf(to, "\\\n");
+			stat->line_char_count = 0;
+		}
+		
+		int prev_ch = ch;
+		ch = fgetc(from);		
+		if((ch == '\n') && (prev_ch == '\\')){
+			fprintf(to, "%c", ch);
+			ch = fgetc(from);
+		}
+	}
+	fprintf(to, "\n");
+	code_parser_stat_pop(stat);
+	return;
 }
