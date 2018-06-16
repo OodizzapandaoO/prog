@@ -114,6 +114,8 @@ static void pre_proc_expr(FILE *from, FILE *to, code_parser_stat_t *stat){
 		}
 	}
 	fprintf(to, "\n");
+	stat->line_char_count = 0;
+	
 	code_parser_stat_pop(stat);
 	return;
 }
