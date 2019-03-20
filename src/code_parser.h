@@ -5,13 +5,14 @@
 
 typedef enum{
 	EXPR_FIRST = 0,
-	
-	EXPR_NONE = 0,	
+
+	EXPR_NONE = 0,
 	EXPR_PRE_PROC = 1,
 	EXPR_BLOCK = 2,
 	EXPR_OUT_BLOCK = 3,
-	
-	EXPR_LAST = 3,
+	EXPR_ARG = 4,
+
+	EXPR_LAST = 4,
 }expr_t;
 
 struct expr_node_s;
@@ -41,5 +42,3 @@ void code_parser_stat_push(code_parser_stat_t *parser_stat_ptr, expr_t new_expre
 expr_t code_parser_stat_pop(code_parser_stat_t *parser_stat_ptr);
 
 #endif
-
-
